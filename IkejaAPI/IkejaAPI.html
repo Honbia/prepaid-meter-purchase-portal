@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Meter Purchase Portal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #007cf0, #00dfd8);
+      color: #333;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007cf0;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #007cf0;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005dc1;
+    }
+
+    #output {
+      background: #f0f4f8;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      white-space: pre-wrap;
+      min-height: 50px;
+    }
+
+    .loading {
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Meter Purchase</h1>
+
+  <input type="text" id="meterNumber" placeholder="Meter Number (if any)">
+  <input type="text" id="customerName" placeholder="Customer Name" required>
+  <input type="number" id="amount" placeholder="Amount (₦)" required min="1">
+
+  <button onclick="save()">💾 Save Purchase</button>
+  <button onclick="get()">📄 Get Last Purchase</button>
+
+  <div id="output"></div>
+</div>
+
+<script>
+  const apiUrl = 'http://localhost:5136/api/meter' // Make sure this matches your backend
+
+  function showLoading(message) {
+    document.getElementById('output').innerHTML = `<span class="loading">${message}</span>`;
+  }
+
+  function save() {
+    const meter = {
+      meterNumber: document.getElementById('meterNumber').value || 'N/A',
+      customerName: document.getElementById('customerName').value,
+      amount: parseFloat(document.getElementById('amount').value)
+    };
+
+    if (!meter.customerName || isNaN(meter.amount) || meter.amount <= 0) {
+      document.getElementById('output').textContent = "Please enter a valid name and amount.";
+      return;
+    }
+
+    showLoading("Saving purchase...");
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(meter)
+    })
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('output').innerHTML = `✅ <strong>${data}</strong>`;
+    })
+    .catch(err => {
+      document.getElementById('output').textContent = '❌ Error: ' + err;
+    });
+  }
+
+  function get() {
+    showLoading("Fetching last purchase...");
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (!data || Object.keys(data).length === 0) {
+          document.getElementById('output').innerText = "No data found.";
+        } else {
+          document.getElementById('output').innerHTML = `
+            <strong>Last Purchase</strong><br>
+            📟 Meter Number: ${data.meterNumber}<br>
+            👤 Name: ${data.customerName}<br>
+            💰 Amount: ₦${data.amount}
+          `;
+        }
+      })
+      .catch(err => {
+        document.getElementById('output').textContent = '❌ Error: ' + err;
+      });
+  }
+</script>
+
+</body>
+</html>

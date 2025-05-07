@@ -1,0 +1,19 @@
+@IkejaAPI_HostAddress = http://localhost:5136
+
+# Save a meter purchase
+POST {{IkejaAPI_HostAddress}}/api/meter
+Content-Type: application/json
+
+{
+  "meterNumber": "123456",
+  "customerName": "John Doe",
+  "amount": 5000
+}
+
+###
+
+# Get the last meter purchase
+GET {{IkejaAPI_HostAddress}}/api/meter
+Accept: application/json
+
+###
